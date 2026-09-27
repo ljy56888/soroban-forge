@@ -217,4 +217,34 @@ mod tests {
         assert!(rendered.contains("soroban-forge doctor"), "{rendered}");
         assert!(rendered.contains("20.0.0"), "{rendered}");
     }
+
+    /// The variant the issue names: a tool that isn't on `PATH` must point the
+    /// user at `soroban-forge doctor` too, not just the "present but too old"
+    /// case covered above.
+    #[test]
+    fn tool_missing_message_points_at_doctor() {
+        let err = ForgeError::ToolMissing("stellar-cli".into());
+        let rendered = err.to_string();
+        assert!(rendered.contains("soroban-forge doctor"), "{rendered}");
+        assert!(rendered.contains("stellar-cli"), "{rendered}");
+    }
+
+    /// The `doctor` pointer is a property of the tool-lookup errors as a pair,
+    /// so a new call site can't pick one variant and silently lose the hint.
+    ///
+    /// [`ForgeError::Doctor`] is deliberately not in this list: it is also
+    /// exit `2`, but its message *is* doctor's own aggregate report, so
+    /// telling the user to run `doctor` again would be circular.
+    #[test]
+    fn every_tool_lookup_error_points_at_doctor() {
+        let errors = [
+            ForgeError::ToolMissing("stellar-cli".into()),
+            ForgeError::ToolUnsupported("stellar-cli 20.0.0 is too old".into()),
+        ];
+        for error in errors {
+            assert_eq!(error.exit_code(), ExitCode::ToolMissing, "{error}");
+            let rendered = error.to_string();
+            assert!(rendered.contains("soroban-forge doctor"), "{rendered}");
+        }
+    }
 }

@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- `crates/core`: regression tests asserting that every tool-lookup error
+  (`ToolMissing` / `ToolUnsupported`) renders the `soroban-forge doctor`
+  pointer, so the hint can't be dropped from one variant silently (#370)
 - `soroban-forge --list --json` now emits structured `builtin` and `external`
   subcommand arrays for scripts (#332)
 - `soroban-forge bindings-py`: a new crate generating a typed Python client
